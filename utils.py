@@ -3,16 +3,30 @@ from psycopg2.extensions import AsIs
 from configparser import ConfigParser
 
 
-def read_config(filename, args):
+def read_config(filename, args, section='PSQL'):
     Config = ConfigParser()
     Config.read('config.ini')
 
     res = {}
 
     for arg in args:
-        res[arg] = Config.get('PSQL', arg)
+        res[arg] = Config.get(section, arg)
 
     return res
+
+
+def get_public_tables(psql):
+    tables = []
+    command = "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
+    res = psql.exec(command)
+
+    if res.success is False:
+        return []
+    else:
+        for e in res.result:
+            tables.append(e[0])
+
+    return tables
 
 
 def get_operators(psql, table_name):
