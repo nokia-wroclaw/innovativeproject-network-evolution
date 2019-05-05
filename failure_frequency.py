@@ -3,9 +3,6 @@ from math import floor
 from utils import *
 from psycopg2.extensions import AsIs
 
-
-
-prox = 50
 relevance_point = 0.00
 
 
@@ -22,6 +19,7 @@ def failure_frequency(args, table_alarm, table_software):
         #print(operators)
         failures = {}
         soft_life = {}
+        soft_operators = {}
         for operator in range(len(operators)):
             dates = []
             command = """SELECT DISTINCT \"Date\", \"SW_version\", \"Value\" FROM \"%s\"
@@ -52,6 +50,7 @@ def failure_frequency(args, table_alarm, table_software):
                 for i in range(len(res.result)):
                     alarms[res.result[i][0]] = res.result[i][1]
 
+            soft_encountered = {}
             for di in range(len(dates)):
                 State = dates[di][1]
                 sum = 0
@@ -71,6 +70,12 @@ def failure_frequency(args, table_alarm, table_software):
                     if soft[software]/sum >= relevance_point:
                         soft_life[software] += 1
 
+                    if software not in soft_encountered:
+                        soft_encountered[software] = 1
+                        if software not in soft_operators:
+                            soft_operators[software] = 0
+                        soft_operators[software] += 1
+
                 if dates[di][0] in alarms:
                     #print(alarms[dates[di][0]])
                     for software in soft:
@@ -82,13 +87,24 @@ def failure_frequency(args, table_alarm, table_software):
             frequency[software] = floor(100*30*failures[software]/soft_life[software])
             #print(software, ": ", frequency[software])
 
+        software_list = []
+        for software in frequency:
+            software_list.append(software)
+        software_list = sorted(software_list)
+
         X = []
         Y = []
-        for software in frequency:
+        Z = []
+        for software in software_list:
             X.append(software)
             Y.append(frequency[software])
 
-        return X, Y
+        avg_life = {}
+        for software in software_list:
+            avg_life[software] = soft_life[software]/soft_operators[software]
+            Z.append(avg_life[software])
+
+        return X, Y, Z
 
 
 #arg = read_config('config.ini', ['host', 'port', 'dbname', 'user', 'password'])
