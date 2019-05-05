@@ -43,6 +43,20 @@ def get_operators(psql, table_name):
     return operators
 
 
+def get_softwares(psql, table_name):
+    softwares = []
+    command = "SELECT DISTINCT \"SW_version\" FROM \"%s\""
+    res = psql.exec(command, (AsIs(table_name),))
+
+    if res.success is False:
+        return []
+    else:
+        for i in range(len(res.result)):
+            softwares.append(res.result[i][0])
+
+    return sorted(softwares)
+
+
 def software_dates(psql, table_name, operator_id):
     dates = []
     command = (
