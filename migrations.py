@@ -5,17 +5,18 @@ from psycopg2.extensions import AsIs
 from copy import deepcopy
 from datetime import timedelta
 
-prox = 50
+relevance_point = 0.01
 alarm_delay = timedelta(days=5)
 migration_delay = 1000
 
 
-def operator_migrations(args, table_critical, table_major, table_minor, table_software, oper):
+def operator_migrations(args, table_critical, table_major, table_minor, table_warnings, table_software, oper):
     with PSQL_wrapper(args) as psql:
         table_alarm = []
         table_alarm.append(table_critical)
         table_alarm.append(table_major)
         table_alarm.append(table_minor)
+        table_alarm.append(table_warnings)
         #table_alarm.append("PM_KPI_1_CRITICAL_2018-03-01_2019-02-28_ADJUSTED")
         #table_alarm.append("PM_KPI_2_MAJOR_2018-03-01_2019-02-28_ADJUSTED")
         #table_alarm.append("PM_KPI_3_MINOR_2018-03-01_2019-02-28_ADJUSTED")
@@ -47,7 +48,7 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                         di += 1
                         dates.append([res.result[i][0], [[res.result[i][1], res.result[i][2]]]])
 
-            alarms = [{}, {}, {}]
+            alarms = [{}, {}, {}, {}]
             for i in range(len(table_alarm)):
                 command = "SELECT \"Date\", \"%s\" FROM \"%s\" ORDER BY \"Date\""
                 res = psql.exec(command, (AsIs(operators[operator]), AsIs(table_alarm[i])))
@@ -60,7 +61,7 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
 
             migrations = {}
             migrations_size = {}
-            assigned_alarms = [{}, {}, {}]
+            assigned_alarms = [{}, {}, {}, {}]
             last_alarm = dates[0][0]
 
             for di in range(len(dates) - 1):
@@ -69,24 +70,27 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
 
                 soft1 = {}
                 soft2 = {}
+                sum_avg = 0
+
                 for software in State1:
                     soft1[software[0]] = software[1]
                     soft2[software[0]] = 0
+                    sum_avg += software[1] / 2
 
                 for software in State2:
                     soft2[software[0]] = software[1]
+                    sum_avg += software[1] / 2
                     if software[0] not in soft1:
                         soft1[software[0]] = 0
 
                 minus = {}
                 plus = {}
                 for software in soft1:
-                    if soft2[software] - soft1[software] >= prox:
+                    if (soft2[software] - soft1[software])/sum_avg >= relevance_point:
                         plus[software] = soft2[software] - soft1[software]
 
-                    if soft2[software] - soft1[software] <= -prox:
+                    if (soft2[software] - soft1[software])/sum_avg <= -relevance_point:
                         minus[software] = soft2[software] - soft1[software]
-
 
                 def check(index, test_plus, test_minus, scale_plus, scale_minus, result):
                     mn = 1000000000000000000000000000000
@@ -99,6 +103,11 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                         for soft in test_plus:
                             # #print(soft, test_plus[soft])
                             mn += pow(abs(test_plus[soft]), max(2, scale_plus[soft]))
+
+                        for pair in result:
+                            if (pair[0][:2] == 'TL' and pair[1][:2] == 'FL') or (pair[1][:2] == 'TL' and pair[0][:2] == 'FL'):
+                                mn = 1000000000000000000000000000000
+
                         return mn, result
 
                     name = 0
@@ -189,6 +198,14 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                     # print(minus[software])
                     _, answer = check(0, plus.copy(), minus.copy(), scale_p, scale_m, answer)
 
+                    wrong = False
+                    for pair in answer:
+                        if (pair[0][:2] == 'TL' and pair[1][:2] == 'FL') or (pair[1][:2] == 'TL' and pair[0][:2] == 'FL'):
+                            wrong = True
+
+                    if wrong:
+                        continue
+
                     total = 0
                     for pl in plus:
                         total += plus[pl]
@@ -215,19 +232,19 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                         if checked_day in alarms[0]:
                             alarm_day = checked_day
                             last_alarm = checked_day
-                            new_score = 3*alarms[0][checked_day] + 2*alarms[1][checked_day] + 1*alarms[2][checked_day]
+                            new_score = 3*alarms[0][checked_day] + 2*alarms[1][checked_day] + 1*alarms[2][checked_day] + 0.5*alarms[3][checked_day]
                             if new_score > alarm_score:
                                 alarm_score = new_score
                                 alarm_day = checked_day
                                 last_alarm = checked_day
 
                     #print(alarm_day)
-                    if alarm_day != False:
+                    if alarm_day:
                         for q in range(len(assigned_alarms)):
                             for migration in answer:
                                 if migration not in assigned_alarms[q]:
                                     assigned_alarms[q][migration] = {}
-                                assigned_alarms[q][migration][dates[di][0]]=(floor((alarms[q][alarm_day] / total) * (abs(minus[migration[0]]) + plus[migration[1]])))
+                                assigned_alarms[q][migration][dates[di][0]] = (floor((alarms[q][alarm_day] / total) * (abs(minus[migration[0]]) + plus[migration[1]])))
                                 #print(migration, alarm_day,
                                 #      alarms[q][alarm_day], total, floor(
                                 #       (alarms[q][alarm_day] / total) * (
@@ -284,7 +301,6 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                         total.append(0)
 
                     for day in range((end - start).days+1):
-
                         if start + timedelta(days=day) in migrations_size[migration]:
                             size += migrations_size[migration][start + timedelta(days=day)]
 
@@ -299,7 +315,7 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                     #if (end-start).days <= 1:
                         #print("DURATION:", (end-start).days, "day")
                     #else:
-                        #print("DURATION:", (end - start).days, "days")
+                        #print("DURATION:", (end-start).days, "days")
                     mig[migration]["duration"] = (end-start).days
 
                     #print("SIZE:", size)
@@ -315,6 +331,9 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
                         if i == 2:
                             #print("MINOR:", total[i])
                             mig[migration]["minor"] = total[i]
+                        if i == 3:
+                            #print("WARNINGS:", total[i])
+                            mig[migration]["warnings"] = total[i]
 
                     #print()
 
@@ -322,4 +341,4 @@ def operator_migrations(args, table_critical, table_major, table_minor, table_so
 
 
 #arg = read_config('config.ini', ['host', 'port', 'dbname', 'user', 'password'])
-#operator_migrations(arg, "PM_KPI_1_CRITICAL_2018-03-01_2019-02-28_ADJUSTED", "PM_KPI_2_MAJOR_2018-03-01_2019-02-28_ADJUSTED", "PM_KPI_3_MINOR_2018-03-01_2019-02-28_ADJUSTED", "CM_MACRO_SW_version_2018-03-01_2019-03-07_ADJUSTED", 'Operator: 33')
+#operator_migrations(arg, "PM_KPI_1_CRITICAL_2018-03-01_2019-02-28_ADJUSTED", "PM_KPI_2_MAJOR_2018-03-01_2019-02-28_ADJUSTED", "PM_KPI_3_MINOR_2018-03-01_2019-02-28_ADJUSTED", "PM_KPI_4_WARNING_2018-03-01_2019-02-28_ADJUSTED", "CM_MACRO_SW_version_2018-03-01_2019-03-07_ADJUSTED", 'Operator: 53')
