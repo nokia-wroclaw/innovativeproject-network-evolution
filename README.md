@@ -51,7 +51,8 @@ This table combines all the data gathered from calculating migrations for all av
 TBA
 
 ## ADDITIONAL INFO
-The project was tested on macOS 10.14.5 Mojave, using Python version: 3.7.3 and PostgreSQL version: 11.3.
+The project was tested on macOS 10.14.5 Mojave,
+using Python version: 3.7.3 and PostgreSQL version: 11.3.
 
 
 
