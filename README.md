@@ -29,6 +29,7 @@ You will also need to have PostgreSQL installed on your machine, we tested versi
 Allows you to view all gathered data in regard to any chosen operator. The main plot shows how many machines with a specific software the operator had in his network in the chosen interval of time. The standard interval is 1 year.  The plot can be interacted with and any lines can be turned off and on to allow for easier viewing of changes in the amount of specific software installed.
 
 ### Migrations
+![GitHub Logo](/screenshots/migrations.png)
 On the right you can see a table which lists all detected migrations of softwares in the main plot. Migration is a continuous event describing the change of installed software on the used machines in the network. The ‘duration’ statistic is calculated by subtracting the first date when a specific software migration was detected from the last day when the same migration was detected. ‘Alarms’ statistic lists how many alarms were detected which occured in dates close to the dates of migrations. ‘Size’ simply states how many machines were taking part in specific migration. 
 
 You can also view detailed info on detected migrations by choosing tab ‘Details’ in the menu. Additionally you can also view a separate plot showing how many alarms when detected in operator’s network by choosing ‘Alarms’ tab in the menu. 
