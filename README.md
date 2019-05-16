@@ -27,7 +27,7 @@ You will also need to have PostgreSQL installed on your machine, we tested versi
 ## METRICS
 ### Operators View
 ![GitHub Logo](/screenshots/operator_view.png)
-Allows you to view all gathered data in regard to any chosen operator. The main plot shows how many machines with a specific software the operator had in his network in the chosen interval of time. The standard interval is 1 year.  The plot can be interacted with and any lines can be turned off and on to allow for easier viewing of changes in the amount of specific software installed.
+Allows you to view all gathered data in regard to any chosen operator. The main plot shows how many machines with a specific software the operator had in his network in the chosen interval of time. The standard interval is 2 years.  The plot can be interacted with and any lines can be turned off and on to allow for easier viewing of changes in the amount of specific software installed.
 
 ### Migrations
 ![GitHub Logo](/screenshots/migrations.png)
