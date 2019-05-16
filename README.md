@@ -21,6 +21,7 @@ $ pip3 install psycopg2
 
 ## METRICS
 ### failure frequency
+![GitHub Logo](/screenshots/failure_frequency.png)
 How many failures / alarms are expected per month - a value of 30 for 100 machines means that there were 30 malfunctions over the span of one month
 
 ### ???
