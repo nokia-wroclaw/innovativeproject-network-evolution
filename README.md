@@ -6,6 +6,7 @@ A helper tool that makes network evolution analysis a breeze.
 - [DEPENDENCIES](#dependencies)
 - [FEATURES](#features)
 - [METRICS](#metrics)
+- [HOW TO USE](#how-to-use)
 - [ADDITIONAL INFO](#additional-info)
 
 ## DEPENDENCIES
