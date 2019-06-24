@@ -17,7 +17,7 @@ $ pip3 install bokeh==1.2.0
 ```
 The dependencies can also be installed the easy way once you clone the repository:
 ```
-pip3 install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 You will also need to have access to a PostgreSQL instance: we tested version 11.3 ourselves, but any other recent release should be fine as well.
 
