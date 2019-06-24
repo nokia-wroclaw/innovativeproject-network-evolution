@@ -10,7 +10,7 @@ A helper tool that makes network evolution analysis a breeze.
 - [ADDITIONAL INFO](#additional-info)
 
 ## DEPENDENCIES
-You'll need Python 3.6 or newer. The libraries below are necessary and can be installed via pip:  
+You'll need Python 3.7.3 or newer (since Numpy likes to throw a hissy fit on 3.6.X and lower). The libraries below are necessary and can be installed via pip:  
 ```
 $ pip3 install psycopg2==2.8.3
 $ pip3 install bokeh==1.2.0
@@ -36,7 +36,7 @@ Allows you to view all gathered data in regard to any chosen operator. The main 
 
 ### Migrations
 ![Operator migrations](./screenshots/operators_view_migrations.png)
-On the right you can see a table which lists all detected migrations of softwares in the main plot. Migration is a continuous event describing the change of installed software on the used machines in the network. The ‘duration’ statistic is calculated by subtracting the first date when a specific software migration was detected from the last day when the same migration was detected. ‘Alarms’ statistic lists how many alarms were detected which occured in dates close to the dates of migrations. ‘Size’ simply states how many machines were taking part in specific migration. The fields in the table are colored to indicate some facts about migrations. Daring migration means that the migration went a few (at least 3) software versions ahead, instead of just migrating to the next version of the software. Regression means that the migration changed to a software that was older than the one already installed. 
+On the right you can see a table which lists all detected migrations of softwares in the main plot. Migration is a continuous event describing the change of installed software on the used machines in the network. The ‘duration’ statistic is calculated by subtracting the first date when a specific software migration was detected from the last day when the same migration was detected. ‘Alarms’ statistic lists how many alarms were detected which occured in dates close to the dates of migrations. ‘Size’ simply states how many machines were taking part in a specific migration. The fields in the table are colored to indicate some facts about the migrations. Daring migration means that the migration went a few (at least 3) software versions ahead, instead of just migrating to the next version of the software. Regression means that the migration changed to a software that was older than the one already installed. 
 
 ### Software statistics
 ![Software view](./screenshots/software_view_fd.png)
@@ -73,9 +73,9 @@ Note that you might need to forward port 5006 to access the container. This can 
 
 Additionally, in order to access a PostgreSQL database running on your local machine from the container you will need to perform some additional steps, depending on your operating system (at least until the pull request no. #2348 of docker/libnetwork gets accepted).
 
-On Linux, adding `--network="host"` to the `docker run` command will suffice, as it will bridge network interfaces of `host` machine and the container.
+On Linux, adding `--network="host"` to the `docker run` command will suffice, as it will bridge network interfaces of host machine and the container.
 
-Since Docker on MacOS and Windows runs slightly differently, you will instead need to set the host variable in `PSQL` section of `config.ini` to `host.docker.internal`, which will be promptly resolved via Docker's NAT service to the host's local network.
+Since Docker on MacOS and Windows runs slightly differently, you will instead need to set the host variable in `PSQL` section of `config.ini` to `host.docker.internal`, which will promptly resolve to the host's local network via Docker's NAT service.
 
 ## ADDITIONAL INFO
 The project was tested on macOS 10.14.5 Mojave, using Python version: 3.7.3 and PostgreSQL version: 11.3.
