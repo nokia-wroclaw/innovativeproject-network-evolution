@@ -3,11 +3,16 @@
 
 A helper tool that makes network evolution analysis a breeze.
 
+- [INTRODUCTION](#introduction)
 - [DEPENDENCIES](#dependencies)
 - [FEATURES](#features)
 - [METRICS](#metrics)
 - [HOW TO USE](#how-to-use)
 - [ADDITIONAL INFO](#additional-info)
+- [CONTRIBUTING](#contributing)
+
+## INTRODUCTION
+Nokia passively collects lots of various data from stations from multiple different networks. The amount of data is far too large to analyze manually, but it can be processed effectively with algorithms. Our project focuses on creating a program capable of automatically analyzing data regarding software used by operators and alarms in their networks.
 
 ## DEPENDENCIES
 You'll need Python 3.7.3 or newer (since Numpy likes to throw a hissy fit on 3.6.X and lower). The libraries below are necessary and can be installed via pip:  
@@ -79,3 +84,12 @@ Since Docker on MacOS and Windows runs slightly differently, you will instead ne
 
 ## ADDITIONAL INFO
 The project was tested on macOS 10.14.5 Mojave, using Python version: 3.7.3 and PostgreSQL version: 11.3.
+
+## CONTRIBUTING
+Students:
+* Wojciech Jarząbek
+* Jacek Leja
+
+Nokia Supervisors:
+* Weronika Białecka
+* Ewa Boryczka
